@@ -1,6 +1,7 @@
 import Utilities.Code;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Represents the third class in Project 1 (Part 03/04) and serves as a shelf for storing books.
@@ -12,7 +13,7 @@ public class Shelf {
     public final static int SHELF_NUMBER_ = 0;
     public final static int SUBJECT_ = 1;
 
-    private HashMap<Book, Integer> books;
+    private HashMap<Book, Integer> books = new HashMap<>();
     private int shelfNumber;
     private String subject;
 
@@ -48,8 +49,25 @@ public class Shelf {
 
     public Code removeBook(Book book) {
         if (!books.containsKey(book)) {
-            System.out.println();
+            System.out.println(book + " is not on shelf " + subject);
+
+            return Code.BOOK_NOT_IN_INVENTORY_ERROR;
         }
+
+        if (books.containsValue(0)) {
+            System.out.println("No copies of " + book + " remain on shelf " + subject);
+            return Code.BOOK_NOT_IN_INVENTORY_ERROR;
+        } else {
+            int count = books.get(book);
+            books.put(book, count - 1);
+            System.out.println(book + " successfully removed from shelf " + subject);
+
+            return Code.SUCCESS;
+        }
+    }
+
+    public String listBooks() {
+        return books.size() + " book on shelf: " + this + "\n";
     }
 
     @Override
@@ -58,11 +76,11 @@ public class Shelf {
     }
 
     public int getBookCount(Book book) {
-        if (!books.containsKey(book)) {
-            return -1;
-        }
+        Integer count = books.get(book);
 
-        return books.size();
+        // Citing requireNonNullElse()
+        // https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Objects.html
+        return Objects.requireNonNullElse(count, -1);
     }
 
     public HashMap<Book, Integer> getBooks() {
