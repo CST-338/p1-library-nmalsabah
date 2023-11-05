@@ -1,9 +1,10 @@
 import java.time.LocalDate;
 
 /**
- * This is the first class in Project 1. It represents a book.
+ * Represents the first class in Project 1 (Part 01/04), which is used to model a book.
+ *
  * @author Nicole Al-Sabah
- * 4 - November - 2023
+ * Date: November 4, 2023
  */
 public class Book {
     public final static int ISBN_ = 0;
