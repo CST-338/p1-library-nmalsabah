@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * This is the second class in Project 1.
- * It is used to interact with the books in a library.
+ * Represents the second class in Project 1 (Part 02/04), responsible for interacting with books in a library.
+ *
  * @author Nicole Al-Sabah
- * 4 - November - 2023
+ * Date: November 4, 2023
  */
 public class Reader {
     public final static int CARD_NUMBER_ = 0;
