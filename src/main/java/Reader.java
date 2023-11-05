@@ -31,6 +31,8 @@ public class Reader {
     }
 
     public Code addBook(Book book){
+        // Adding citation for add()
+        // https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/List.html
         if (books.contains(book)){
             return Code.BOOK_ALREADY_CHECKED_OUT_ERROR;
         }
@@ -39,6 +41,8 @@ public class Reader {
     }
 
     public Code removeBook(Book book) {
+        // Adding citation for remove()
+        // https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/List.html
         if (!books.contains(book)) {
             books.remove(book);
             return Code.READER_DOESNT_HAVE_BOOK_ERROR;
