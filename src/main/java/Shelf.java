@@ -1,7 +1,9 @@
 import Utilities.Code;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Represents the third class in Project 1 (Part 03/04) and serves as a shelf for storing books.
@@ -67,7 +69,35 @@ public class Shelf {
     }
 
     public String listBooks() {
-        return books.size() + " book on shelf: " + this + "\n";
+
+        int numberOfBooks = books.size();
+        String bookSpelling;
+
+        if (numberOfBooks == 1) {
+            bookSpelling = "book";
+        } else {
+            bookSpelling = "books";
+        }
+
+        // Citation for converting HashMap into an ArrayList
+        // https://www.geeksforgeeks.org/how-to-convert-hashmap-to-arraylist-in-java/
+        Set<Book> bookSet = books.keySet();
+
+        ArrayList<Book> bookList = new ArrayList<>(bookSet);
+
+        String bookMessage = "";
+
+        for (int i = 0; i < bookList.size(); i++) {
+            Book book = bookList.get(i);
+
+            String bookString = book.toString();
+
+            String bookNumber = " " + (i + 1) + "\n";
+
+            bookMessage += bookString + bookNumber;
+        }
+
+        return numberOfBooks + " " + bookSpelling + " on shelf: " + this + "\n" + bookMessage;
     }
 
     @Override
