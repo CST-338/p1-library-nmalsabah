@@ -1,9 +1,7 @@
 import Utilities.Code;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Represents the fourth class in Project 1 (Part 04/04) and represents a library.
@@ -67,8 +65,24 @@ public class Library {
   }
 
   public Code returnBook(Reader reader, Book book) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      if (!reader.hasBook(book)) {
+          System.out.println(reader.getName() + " doesn't have " + book + " checked out");
+          return Code.READER_DOESNT_HAVE_BOOK_ERROR;
+      }
+
+      if (!books.containsKey(book)) {
+          System.out.println(reader.getName() + " is returning " + book);
+          reader.removeBook(book);
+          return Code.BOOK_NOT_IN_INVENTORY_ERROR;
+      }
+
+      if (reader.removeBook(book) == Code.SUCCESS) {
+          returnBook(book);
+          return Code.SUCCESS;
+      } else {
+          System.out.println("Could not return " + book);
+          return Code.READER_COULD_NOT_REMOVE_BOOK_ERROR;
+      }
   }
 
   public Code returnBook(Book book) {
@@ -97,7 +111,17 @@ public class Library {
       return Code.NOT_IMPLEMENTED_ERROR;
   }
   public Book getBookByISBN(String isbn) {
-      System.out.println("Not implemented");
+      List<Book> listBooks = new ArrayList<>(books.keySet());
+
+      for (int i = 0; i < listBooks.size(); i++) {
+          Book book = listBooks.get(i);
+
+          if (book.getISBN().equals(isbn)) {
+              return book;
+          }
+      }
+
+      System.out.println("ERROR: Could not find a book with isbn: " + isbn);
       return null;
   }
 
@@ -106,8 +130,25 @@ public class Library {
   }
 
   public int listShelves(boolean showBooks) {
-      System.out.println("Not implemented");
-      return 0;
+      int shelfCount = 0;
+
+      Set<String> shelfSet = shelves.keySet();
+      List<String> listShelf = new ArrayList<>(shelfSet);
+
+        for (int i = 0; i < listShelf.size(); i++) {
+            String shelfSubject = listShelf.get(i);
+            Shelf shelf = shelves.get(shelfSubject);
+
+            if (showBooks) {
+                shelf.listBooks();
+            } else {
+                System.out.println(shelf.toString());
+            }
+
+            shelfCount++;
+        }
+
+      return shelfCount;
   }
 
   public Code addShelf(String shelfSubject) {
