@@ -97,8 +97,21 @@ public class Library {
   }
 
   private Code addBookToShelf(Book book, Shelf shelf) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      if (returnBook(book) == Code.SUCCESS) {
+          return Code.SUCCESS;
+      }
+
+      if (!shelves.containsKey(book.getSubject())) {
+          return Code.SHELF_SUBJECT_MISMATCH_ERROR;
+      }
+
+      if (shelf.addBook(book) == Code.SUCCESS) {
+          System.out.println(book + " added to shelf");
+          return Code.SUCCESS;
+      } else {
+          System.out.println("Could not add " + book + " to shelf");
+          return Code.SHELF_SUBJECT_MISMATCH_ERROR;
+      }
   }
 
   public int listBooks() {
@@ -152,13 +165,39 @@ public class Library {
   }
 
   public Code addShelf(String shelfSubject) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      Shelf newShelf = new Shelf(shelves.size() + 1, shelfSubject);
+
+      return addShelf(newShelf);
   }
 
   public Code addShelf(Shelf shelf) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      if (shelves.containsKey(shelf.getSubject())) {
+          System.out.println("ERROR: Shelf already exists " + shelf);
+          return Code.SHELF_EXISTS_ERROR;
+      }
+
+      shelves.put(shelf.getSubject(), shelf);
+
+      int maxNumber = 0;
+      List<Shelf> listShelf = new ArrayList<>(shelves.values());
+
+      for (int i = 0; i < listShelf.size(); i++) {
+          Shelf shelfSize = listShelf.get(i);
+          maxNumber = Math.max(maxNumber, shelfSize.getShelfNumber());
+      }
+
+      shelf.setShelfNumber(maxNumber + 1);
+
+      List<Book> listBooks = new ArrayList<>(books.keySet());
+
+      for (int i = 0; i < listBooks.size(); i++) {
+          Book book = listBooks.get(i);
+          if (book.getSubject().equals(shelf.getSubject())) {
+              addBookToShelf(book, shelf);
+          }
+      }
+
+      return Code.SUCCESS;
   }
 
   public Shelf getShelf(Integer shelfNumber) {
