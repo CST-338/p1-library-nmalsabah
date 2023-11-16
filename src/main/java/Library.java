@@ -171,6 +171,8 @@ public class Library {
   }
 
   public Code addShelf(Shelf shelf) {
+      // Citation for Math.max
+      // https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Math.html
       if (shelves.containsKey(shelf.getSubject())) {
           System.out.println("ERROR: Shelf already exists " + shelf);
           return Code.SHELF_EXISTS_ERROR;
@@ -201,27 +203,55 @@ public class Library {
   }
 
   public Shelf getShelf(Integer shelfNumber) {
-      System.out.println("Not implemented");
-      return null;
+      if (shelves.containsKey(shelfNumber.toString())) {
+          return shelves.get(shelfNumber.toString());
+      } else {
+          System.out.println("No shelf number " + shelfNumber + " found");
+          return null;
+      }
   }
 
   public Shelf getShelf(String subject) {
-      System.out.println("Not implemented");
-      return null;
+        if (shelves.containsKey(subject)) {
+            return shelves.get(subject);
+        } else {
+            System.out.println("No shelf for " + subject + " books");
+            return null;
+        }
   }
 
   public int listReaders() {
-      System.out.println("Not implemented");
-      return 0;
+      for (int i = 0; i < readers.size(); i++) {
+            Reader reader = readers.get(i);
+            System.out.println(reader.toString());
+      }
+
+      return readers.size();
   }
 
   public int listReaders(boolean showBooks) {
-      System.out.println("Not implemented");
-      return 0;
+      for (int i = 0; i < readers.size(); i++) {
+          Reader reader = readers.get(i);
+
+          if (showBooks) {
+              System.out.println(reader.getName() + " (#" + reader.getCardNumber() + ")" + " has the following books:" + "\n" + reader.getBooks());
+          } else {
+              System.out.println(reader.toString());
+          }
+      }
+
+      return readers.size();
   }
 
   public Reader getReaderByCard(int cardNumber) {
-      System.out.println("Not implemented");
+      for (int i = 0; i < readers.size(); i++) {
+          Reader reader = readers.get(i);
+          if (reader.getCardNumber() == cardNumber) {
+              return reader;
+          }
+      }
+
+      System.out.println("Could not find a reader with card #" + cardNumber);
       return null;
   }
 
@@ -250,8 +280,13 @@ public class Library {
   }
 
   private Code errorCode(int codeNumber) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      for (Code code : Code.values()) {
+          if (code.getCode() == codeNumber) {
+              return code;
+          }
+      }
+
+      return Code.UNKNOWN_ERROR;
   }
 
   public String getName() {
