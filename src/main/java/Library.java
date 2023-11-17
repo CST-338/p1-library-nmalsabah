@@ -120,9 +120,44 @@ public class Library {
   }
 
   public Code checkOutBook(Reader reader, Book book) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      if (!readers.contains(reader)) {
+          System.out.println(reader.getName() + " doesn't have an account here");
+          return Code.READER_NOT_IN_LIBRARY_ERROR;
+      }
+
+      if (reader.getBookCount() >= LENDING_LIMIT) {
+          System.out.println(reader.getName() + " has reached the lending limit, " + "(" + LENDING_LIMIT + ")");
+          return Code.BOOK_LIMIT_REACHED_ERROR;
+      }
+
+      if (!books.containsKey(book)) {
+          System.out.println("ERROR: could not find " + book);
+          return Code.BOOK_NOT_IN_INVENTORY_ERROR;
+      }
+
+      if (!shelves.containsKey(book.getSubject())) {
+          System.out.println("no shelf for " + book.getSubject() + " books!");
+          return Code.SHELF_EXISTS_ERROR;
+      }
+
+      if (shelves.get(book.getSubject()).getBookCount(book) < 1) {
+          System.out.println("ERROR: no copies of " + book + " remain");
+          return Code.BOOK_NOT_IN_INVENTORY_ERROR;
+      }
+
+      if (reader.addBook(book) != Code.SUCCESS) {
+          System.out.println("Couldn't checkout " + book);
+          return Code.SHELF_EXISTS_ERROR;
+      }
+
+      if (shelves.get(book.getSubject()).removeBook(book) == Code.SUCCESS) {
+          System.out.println(book + " checked out successfully");
+          return Code.SUCCESS;
+      }
+
+      return Code.SUCCESS;
   }
+
   public Book getBookByISBN(String isbn) {
       List<Book> listBooks = new ArrayList<>(books.keySet());
 
@@ -256,13 +291,42 @@ public class Library {
   }
 
   public Code addReader(Reader reader) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      if (readers.contains(reader)) {
+          System.out.println(reader.getName() + " already has an account!");
+          return Code.READER_ALREADY_EXISTS_ERROR;
+      }
+
+      for (int i = 0; i < readers.size(); i++) {
+          Reader existingReader = readers.get(i);
+          if (existingReader.getCardNumber() == reader.getCardNumber()) {
+              System.out.println(existingReader.getName() + " and " + reader.getName() + " have the same card number!");
+              return Code.READER_CARD_NUMBER_ERROR;
+          }
+      }
+
+      readers.add(reader);
+      System.out.println(reader.getName() + " added to the library!");
+
+      if (reader.getCardNumber() > libraryCard) {
+          libraryCard = reader.getCardNumber();
+      }
+
+      return Code.SUCCESS;
   }
 
   public Code removeReader(Reader reader) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      if (!readers.contains(reader)) {
+          System.out.println(reader.getName() + " is not part of this Library");
+          return Code.READER_NOT_IN_LIBRARY_ERROR;
+      }
+
+      if (reader.getBookCount() > 0) {
+          System.out.println(reader.getName() + " must return all books!");
+          return Code.READER_STILL_HAS_BOOKS_ERROR;
+      }
+
+      readers.remove(reader);
+      return Code.SUCCESS;
   }
 
   public static int convertInt(String recordCountString, Code code) {
