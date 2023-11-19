@@ -1,6 +1,9 @@
 import Utilities.Code;
 
+import java.io.File;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -12,34 +15,162 @@ import java.util.*;
 public class Library {
   public final static int LENDING_LIMIT = 5;
 
-  private String name;
+  private final String name;
   private static int libraryCard;
-  private List<Reader> readers;
-  private HashMap<String, Shelf> shelves = new HashMap<>();
-  private HashMap<Book, Integer> books = new HashMap<>();
+  private final List<Reader> readers = new ArrayList<>();
+  private final HashMap<String, Shelf> shelves = new HashMap<>();
+  private final HashMap<Book, Integer> books = new HashMap<>();
 
   public Library(String name) {
       this.name = name;
   }
 
   public Code init(String filename) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      File file = new File(filename);
+
+      if (!file.exists()) {
+          return Code.FILE_NOT_FOUND_ERROR;
+      }
+
+      try {
+          Scanner scanner = new Scanner(file);
+          // Books
+          String bookNumberLine = scanner.nextLine();
+          int numberOfBooks = convertInt(bookNumberLine, Code.BOOK_COUNT_ERROR);
+          if (numberOfBooks < 0) {
+                return errorCode(numberOfBooks);
+          }
+
+          Code initBooksCode = initBooks(numberOfBooks, scanner);
+
+          if (initBooksCode != Code.SUCCESS) {
+              return initBooksCode;
+          }
+
+          // Shelves
+          String shelfNumberLine = scanner.nextLine();
+          int numberOfShelves = convertInt(shelfNumberLine, Code.SHELF_COUNT_ERROR);
+          if (numberOfShelves < 0) {
+              return errorCode(numberOfShelves);
+          }
+
+          Code initShelvesCode = initShelves(numberOfShelves, scanner);
+
+          if (initShelvesCode != Code.SUCCESS) {
+              return initShelvesCode;
+          }
+
+          // Readers
+          String readerNumberLine = scanner.nextLine();
+          int numberOfReaders = convertInt(readerNumberLine, Code.READER_COUNT_ERROR);
+          if (numberOfReaders < 0) {
+              return errorCode(numberOfReaders);
+          }
+
+          Code initReaderCode = initReader(numberOfReaders, scanner);
+
+          if (initReaderCode != Code.SUCCESS) {
+              return initReaderCode;
+          }
+      } catch (Exception e) {
+      }
+
+      return Code.SUCCESS;
   }
 
   private Code initBooks(int bookCount, Scanner scan) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      for (int i = 0; i < bookCount; i++) {
+          try {
+              String bookLine = scan.nextLine();
+              String[] bookInfo = bookLine.split(",");
+
+              if (bookInfo.length != 6) {
+                  return Code.BOOK_COUNT_ERROR;
+              }
+
+              String isbn = bookInfo[0];
+              String title = bookInfo[1];
+              String subject = bookInfo[2];
+              int pageCount = convertInt(bookInfo[3], Code.PAGE_COUNT_ERROR);
+              String author = bookInfo[4];
+              LocalDate dueDate = convertDate(bookInfo[5], Code.DATE_CONVERSION_ERROR);
+              Book book = new Book(isbn, title, subject, pageCount, author, dueDate);
+              addBook(book);
+          } catch (Exception e) {
+              return Code.BOOK_COUNT_ERROR;
+          }
+      }
+
+      return Code.SUCCESS;
   }
 
   private Code initShelves(int shelfCount, Scanner scan) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      for (int i = 0; i < shelfCount; i++) {
+          try {
+              String shelfLine = scan.nextLine();
+              String[] shelfInfo = shelfLine.split(",");
+
+              if (shelfInfo.length != 2) {
+                  return Code.SHELF_NUMBER_PARSE_ERROR;
+              }
+
+              int shelfNumber = convertInt(shelfInfo[0], Code.SHELF_COUNT_ERROR);
+
+              if (shelfNumber < 1) {
+                    return Code.SHELF_NUMBER_PARSE_ERROR;
+              }
+
+              String subject = shelfInfo[1];
+              Shelf shelf = new Shelf(shelfNumber, subject);
+              addShelf(shelf);
+          } catch (Exception e) {
+              System.out.println("Number of shelves doesn't match expected");
+              return Code.SHELF_NUMBER_PARSE_ERROR;
+          }
+      }
+
+      return Code.SUCCESS;
   }
 
   private Code initReader(int readerCount, Scanner scan) {
-      System.out.println("Not implemented");
-      return Code.NOT_IMPLEMENTED_ERROR;
+      for (int i = 0; i < readerCount; i++) {
+          try {
+              String readerLine = scan.nextLine();
+              String[] readerInfo = readerLine.split(",");
+
+              int cardNumber = convertInt(readerInfo[0], Code.READER_CARD_NUMBER_ERROR);
+              String name = readerInfo[1];
+              String phone = readerInfo[2];
+              Reader reader = new Reader(cardNumber, name, phone);
+              addReader(reader);
+
+              String numberOfBooks = readerInfo[3];
+              int bookCount = convertInt(numberOfBooks, Code.BOOK_COUNT_ERROR);
+
+              if (readerInfo.length != 4 + bookCount * 2) {
+                  return Code.READER_COUNT_ERROR;
+              }
+
+              for (int j = 0; j < bookCount; j+= 2) {
+                  String isbn = readerInfo[4 + j];
+                  String dueDate = readerInfo[5 + j];
+                  Book book = getBookByISBN(isbn);
+
+                  if (book == null) {
+                      System.out.println("Error");
+                      continue;
+                  }
+
+                  checkOutBook(reader, book);
+                  book.setDueDate(convertDate(dueDate, Code.DATE_CONVERSION_ERROR));
+              }
+
+          } catch (Exception e) {
+              return Code.SHELF_NUMBER_PARSE_ERROR;
+          }
+      }
+
+      return Code.SUCCESS;
   }
 
   public Code addBook(Book newBook) {
@@ -115,8 +246,20 @@ public class Library {
   }
 
   public int listBooks() {
-      System.out.println("Not implemented");
-      return 0;
+      Set<Book> bookSet = books.keySet();
+
+      ArrayList<Book> bookList = new ArrayList<>(bookSet);
+
+      int bookCount = 0;
+
+      for (int i = 0; i < bookList.size(); i++) {
+          Book book = bookList.get(i);
+          int count = books.get(book);
+          bookCount += count;
+          System.out.println(count + " copies of " + bookList.get(i));
+      }
+
+      return bookCount;
   }
 
   public Code checkOutBook(Reader reader, Book book) {
@@ -330,13 +473,40 @@ public class Library {
   }
 
   public static int convertInt(String recordCountString, Code code) {
-      System.out.println("Not implemented");
-      return 0;
+      try {
+          return Integer.parseInt(recordCountString);
+      } catch (NumberFormatException e) {
+          switch (code) {
+              case BOOK_COUNT_ERROR:
+                  System.out.println("Error: Could not read number of books");
+                  break;
+              case PAGE_COUNT_ERROR:
+                  System.out.println("Error: could not parse page count");
+                  break;
+              case DATE_CONVERSION_ERROR:
+                  System.out.println("Error: Could not parse date component");
+                  break;
+              default:
+                  System.out.println("Error: Unknown conversion error");
+                  break;
+          }
+          return code.getCode();
+      }
   }
 
   public static LocalDate convertDate(String date, Code errorCode) {
-      System.out.println("Not implemented");
-      return null;
+      LocalDate defaultDate = LocalDate.of(1970, 1, 1);
+
+      if (Objects.equals(date, "0000")) {
+          return defaultDate;
+      }
+      try {
+          return LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+      } catch (DateTimeParseException e) {
+          System.out.println("ERROR: date conversion error, could not parse " + date);
+          System.out.println("Using default date (01-jan-1970)");
+          return defaultDate;
+      }
   }
 
   public static int getLibraryCardNumber() {
